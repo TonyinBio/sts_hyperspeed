@@ -23,6 +23,13 @@ namespace sts::search {
         int stepCount = 0;
         bool paused = false;
         bool pauseOnCardReward = false;
+        // pause and cede control to the caller (python) on these out-of-combat decision screens,
+        // so an external policy (e.g. a learned model) can make the choice instead of the built-in heuristic.
+        bool pauseOnMap = false;
+        bool pauseOnRest = false;
+        bool pauseOnShop = false;
+        bool pauseOnEvent = false;
+        bool pauseOnBattle = false;   // cede combat to caller (python drives BattleContext with a learned model)
 
         bool printActions = false;
         bool printLogs = false;
