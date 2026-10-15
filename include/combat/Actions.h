@@ -155,7 +155,7 @@ namespace sts {
 
         static Action SuicideAction(int monsterIdx, bool triggerRelics);
 
-        static Action PoisonLoseHpAction();
+        static Action PoisonLoseHpAction(int targetIdx, int amount);
         static Action RemovePlayerDebuffs(); // Orange Pellets Relic
 
         static Action DualityAction(); // Duality Relic

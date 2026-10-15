@@ -34,7 +34,7 @@ void Monster::applyStartOfTurnPowers(BattleContext &bc) {
     }
 
     if (hasStatus<MS::POISON>() && !bc.monsters.areMonstersBasicallyDead()) {
-        bc.addToBot(Actions::PoisonLoseHpAction());
+        bc.addToBot(Actions::PoisonLoseHpAction(idx, getStatus<MS::POISON>()));
     }
 }
 
