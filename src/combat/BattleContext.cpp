@@ -763,19 +763,8 @@ void BattleContext::executeActions() {
             continue;
         }
 
-        // can't win check
-        if (cards.cardsInHand + cards.discardPile.size() + cards.drawPile.size() == 0) {
-            bool hasDamageWithoutCards = player.hasStatus<PS::OMEGA>() ||
-                    player.hasStatus<PS::THORNS>() ||
-                    player.bomb1 ||
-                    player.bomb2 ||
-                    player.bomb3;
-
-            if (!hasDamageWithoutCards && monsters.arr[0].id != MonsterId::TRANSIENT) {
-                outcome = Outcome::PLAYER_LOSS;
-                break;
-            }
-        }
+        // Empty card piles are not a loss: potions and delayed damage can
+        // still win. Let normal actions and turn resolution decide the outcome.
 
         if (outcome != Outcome::UNDECIDED) {
             break;
@@ -1073,7 +1062,7 @@ void BattleContext::useAttackCard() {
         }
 
         case CardId::IRON_WAVE: {
-            addToBot( Actions::GainBlock(calculateCardBlock(calculateCardBlock(up  ? 7 : 5))) );
+            addToBot( Actions::GainBlock(calculateCardBlock(up ? 7 : 5)) );
             addToBot( Actions::AttackEnemy(t, calculateCardDamage(c, t, up ? 7 : 5)) );
             break;
         }
@@ -2266,7 +2255,7 @@ void BattleContext::drinkPotion(int idx, int target) {
 
 
         case Potion::BLOOD_POTION: {
-            int healAmt = static_cast<int>((static_cast<float>(player.maxHp * (hasBark ? 20 : 40)) / 100.0f));
+            int healAmt = static_cast<int>((static_cast<float>(player.maxHp * (hasBark ? 40 : 20)) / 100.0f));
             addToBot(Actions::HealPlayer(healAmt));
             break;
         }

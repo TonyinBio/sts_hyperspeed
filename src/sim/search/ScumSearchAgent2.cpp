@@ -35,6 +35,7 @@ void search::ScumSearchAgent2::playout(GameContext &gc) {
 
     while (gc.outcome == GameOutcome::UNDECIDED && !paused) {
         if (gc.screenState == ScreenState::BATTLE) {
+            if (pauseOnBattle) { paused = true; return; }   // cede to caller: python drives the battle
             bc = BattleContext();
             bc.init(gc);
 
@@ -149,6 +150,8 @@ void search::ScumSearchAgent2::stepOutOfCombatPolicy(GameContext &gc) {
 
     switch (gc.screenState) {
         case ScreenState::EVENT_SCREEN:
+            // cede to caller only if there is a real choice (MATCH_AND_KEEP / no-select events have 0 valid bits)
+            if (pauseOnEvent && search::GameAction::getValidEventSelectBits(gc) != 0) { paused = true; return; }
             stepEventPolicy(gc);
             break;
 
@@ -166,6 +169,7 @@ void search::ScumSearchAgent2::stepOutOfCombatPolicy(GameContext &gc) {
         }
 
         case ScreenState::SHOP_ROOM: {
+            if (pauseOnShop) { paused = true; return; }
             bool purchased = false;
             for (int i = 0; i < 3; ++i) {
                 if (gc.info.shop.relicPrice(i) != -1 &&  gc.gold >= gc.info.shop.relicPrice(i)) {
@@ -202,6 +206,7 @@ void search::ScumSearchAgent2::stepOutOfCombatPolicy(GameContext &gc) {
         }
 
         case ScreenState::REST_ROOM: {
+            if (pauseOnRest) { paused = true; return; }
             if (gc.curHp > 50 && gc.deck.getUpgradeableCount() > 0 && !gc.hasRelic(RelicId::FUSION_HAMMER)) {
                 takeAction(gc, 1);
             } else if (gc.curHp < 15 && !gc.relics.has(RelicId::COFFEE_DRIPPER)){
@@ -219,6 +224,10 @@ void search::ScumSearchAgent2::stepOutOfCombatPolicy(GameContext &gc) {
             break;
 
         case ScreenState::MAP_SCREEN:
+            if (pauseOnMap) { paused = true; return; }
+            stepRandom(gc);
+            return;
+
         default:
             stepRandom(gc);
             return;

@@ -11,6 +11,9 @@
 #include "game/Game.h"
 #include "game/Map.h"
 
+#include "combat/BattleContext.h"
+#include "sim/search/Action.h"
+
 #include "slaythespire.h"
 
 namespace sts {
@@ -290,6 +293,61 @@ namespace sts::py {
             }
         }
         return false;
+    }
+
+    // Enumerates all valid actions in the current battle state for forward search.
+    std::vector<search::Action> getLegalActions(const BattleContext &bc) {
+        using search::Action;
+        using search::ActionType;
+
+        std::vector<Action> actions;
+
+        if (bc.outcome != Outcome::UNDECIDED) {
+            return actions;
+        }
+
+        if (bc.inputState == InputState::CARD_SELECT) {
+            return Action::enumerateCardSelectActions(bc);
+        }
+
+        if (bc.inputState != InputState::PLAYER_NORMAL) {
+            return actions;
+        }
+
+        const int monsterCount = bc.monsters.monsterCount;
+
+        // Card actions: every card in hand against every monster slot.
+        for (int cardIdx = 0; cardIdx < bc.cards.cardsInHand; ++cardIdx) {
+            for (int targetIdx = 0; targetIdx < monsterCount; ++targetIdx) {
+                Action a(ActionType::CARD, cardIdx, targetIdx);
+                if (a.isValidAction(bc)) {
+                    actions.push_back(a);
+                }
+            }
+        }
+
+        // Potion actions: drink against every monster slot, plus discard.
+        for (int potionIdx = 0; potionIdx < bc.potionCapacity; ++potionIdx) {
+            for (int targetIdx = 0; targetIdx < monsterCount; ++targetIdx) {
+                Action a(ActionType::POTION, potionIdx, targetIdx);
+                if (a.isValidAction(bc)) {
+                    actions.push_back(a);
+                }
+            }
+            // discard potion uses a target idx > 5
+            Action discard(ActionType::POTION, potionIdx, 6);
+            if (discard.isValidAction(bc)) {
+                actions.push_back(discard);
+            }
+        }
+
+        // End turn.
+        Action endTurn(ActionType::END_TURN);
+        if (endTurn.isValidAction(bc)) {
+            actions.push_back(endTurn);
+        }
+
+        return actions;
     }
 
 }

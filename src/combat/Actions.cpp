@@ -927,8 +927,26 @@ Action Actions::SuicideAction(int monsterIdx, bool triggerRelics) {
     }};
 }
 
-Action Actions::PoisonLoseHpAction() {
-    return sts::Action();
+Action Actions::PoisonLoseHpAction(int targetIdx, int amount) {
+    return {[targetIdx, amount](BattleContext &bc) {
+        if (bc.outcome != Outcome::UNDECIDED) {
+            return;
+        }
+        auto &monster = bc.monsters.arr[targetIdx];
+        if (!monster.isDeadOrEscaped() && monster.curHp > 0) {
+            int hpLoss = std::max(0, amount);
+            if (monster.hasStatus<MS::INTANGIBLE>()) {
+                hpLoss = std::min(hpLoss, 1);
+            }
+            // Poison is HP loss: preserve block and avoid normal-attack triggers.
+            // This helper applies Invincible and the existing HP-loss/death hooks.
+            if (hpLoss > 0) monster.damageUnblockedHelper(bc, hpLoss);
+        }
+        // Death can remove powers (e.g. the Awakened One's first phase).
+        if (monster.hasStatus<MS::POISON>()) {
+            monster.decrementStatus<MS::POISON>();
+        }
+    }};
 }
 
 Action Actions::RemovePlayerDebuffs() {

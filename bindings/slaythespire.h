@@ -10,6 +10,7 @@
 #include <array>
 
 #include "constants/Rooms.h"
+#include "sim/search/Action.h"
 
 namespace sts {
 
@@ -61,6 +62,8 @@ namespace sts {
         std::vector<int> getNNMapRepresentation(const Map &map);
         Room getRoomType(const Map &map, int x, int y);
         bool hasEdge(const Map &map, int x, int y, int x2);
+
+        std::vector<search::Action> getLegalActions(const BattleContext &bc);
     }
 
 
