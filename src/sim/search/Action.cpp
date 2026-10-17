@@ -445,7 +445,7 @@ void search::Action::execute(BattleContext &bc) const {
         }
 
         case ActionType::SINGLE_CARD_SELECT:
-            executeSingleCardSelectActionHelper(bc, *this);
+                executeSingleCardSelectActionHelper(bc, *this);
             break;
 
         case ActionType::MULTI_CARD_SELECT:
@@ -537,8 +537,10 @@ std::vector<search::Action> search::Action::enumerateCardSelectActions(const Bat
 
         case CardSelectTask::EXHAUST_MANY:
         case CardSelectTask::GAMBLE:
-            // just dont deal with this right now
-            actions.push_back({search::Action(search::ActionType::MULTI_CARD_SELECT, 0)});
+            for (int mask = 0; mask < (1 << bc.cards.cardsInHand); ++mask) {
+                search::Action action(search::ActionType::MULTI_CARD_SELECT, mask);
+                if (action.isValidAction(bc)) actions.push_back(action);
+            }
             break;
 
         default:
