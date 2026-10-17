@@ -160,6 +160,8 @@ namespace {
             ? static_cast<MonsterEncounter>(py::cast<int>(snapshot["encounter"]))
             : MonsterEncounter::INVALID;
         bc.turn = std::max(0, py::cast<int>(snapshot["turn"]) - 1);
+        bc.energyWasted = snapshot.contains("energy_wasted") ? py::cast<int>(snapshot["energy_wasted"]) : 0;
+        bc.cardsDrawn = snapshot.contains("cards_drawn") ? py::cast<int>(snapshot["cards_drawn"]) : 0;
         bc.outcome = Outcome::UNDECIDED;
         bc.inputState = InputState::PLAYER_NORMAL;
         bc.isBattleOver = false;
