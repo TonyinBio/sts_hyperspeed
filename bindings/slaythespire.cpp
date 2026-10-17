@@ -160,6 +160,8 @@ namespace {
             ? static_cast<MonsterEncounter>(py::cast<int>(snapshot["encounter"]))
             : MonsterEncounter::INVALID;
         bc.turn = std::max(0, py::cast<int>(snapshot["turn"]) - 1);
+        bc.energyWasted = snapshot.contains("energy_wasted") ? py::cast<int>(snapshot["energy_wasted"]) : 0;
+        bc.cardsDrawn = snapshot.contains("cards_drawn") ? py::cast<int>(snapshot["cards_drawn"]) : 0;
         bc.outcome = Outcome::UNDECIDED;
         bc.inputState = InputState::PLAYER_NORMAL;
         bc.isBattleOver = false;
@@ -1252,6 +1254,10 @@ PYBIND11_MODULE(slaythespire, m) {
         .def_property_readonly("upgraded", &CardInstance::isUpgraded)
         .def_readonly("cost", &CardInstance::cost)
         .def_readonly("cost_for_turn", &CardInstance::costForTurn)
+        .def_readonly("unique_id", &CardInstance::uniqueId)
+        .def_readonly("special_data", &CardInstance::specialData)
+        .def_readonly("free_to_play_once", &CardInstance::freeToPlayOnce)
+        .def_readonly("retain", &CardInstance::retain)
         .def_property_readonly("requires_target", &CardInstance::requiresTarget)
         .def("__repr__", [](const CardInstance &c) {
             std::ostringstream os;
@@ -1327,6 +1333,9 @@ PYBIND11_MODULE(slaythespire, m) {
         .def("init_encounter",
              pybind11::overload_cast<const GameContext&, MonsterEncounter>(&BattleContext::init),
              "initialize the battle from a GameContext with an explicit monster encounter")
+        .def_property_readonly("selection_task", [](const BattleContext &bc) {
+            return bc.inputState == InputState::CARD_SELECT ? std::string(cardSelectTaskStrings[static_cast<int>(bc.cardSelectInfo.cardSelectTask)]) : std::string("INVALID");
+        })
         .def("clone", [](const BattleContext &bc) { return BattleContext(bc); },
              "returns a deep copy of the battle (value semantics, RNG included) for deterministic lookahead")
         .def_static("from_snapshot", &battleFromSnapshot,
@@ -1336,6 +1345,12 @@ PYBIND11_MODULE(slaythespire, m) {
         .def_readonly("outcome", &BattleContext::outcome)
         .def_readonly("input_state", &BattleContext::inputState)
         .def_readonly("turn", &BattleContext::turn)
+        .def_readonly("energy_wasted", &BattleContext::energyWasted)
+        .def_readonly("cards_drawn", &BattleContext::cardsDrawn)
+        .def_readonly("potion_count", &BattleContext::potionCount)
+        .def_readonly("potions", &BattleContext::potions)
+        .def_property_readonly("monsters_alive", [](const BattleContext &bc) { return bc.monsters.monstersAlive; })
+        .def("terminal_evaluation", &search::BattleScumSearcher2::evaluateEndState)
         .def_readonly("encounter", &BattleContext::encounter)
         .def_readonly("player", &BattleContext::player)
         .def_property_readonly("monsters", [](const BattleContext &bc) {
