@@ -28,5 +28,26 @@ For tree search and simulation of the popular rogue-like deckbuilder game Slay T
 * Click the star button at the top of the repo :)
 
 **Build tips**
+Requires a C++17 compiler, Python 3.12 with development headers, and
+Make or another CMake build tool. pybind11 is installed into the Python
+environment rather than bundled as a submodule.
+
+From the repository root on Linux or macOS:
+
+```bash
+git submodule update --init --recursive
+python3.12 -m venv .venv
+.venv/bin/python -m pip install -r requirements-build.txt
+.venv/bin/cmake -S . -B build \
+  -DCMAKE_BUILD_TYPE=Release \
+  -DPython_EXECUTABLE="$PWD/.venv/bin/python"
+.venv/bin/cmake --build build --parallel 4
+```
+
+On Windows, use the executables under `.venv\Scripts` and select an appropriate
+CMake generator for your compiler. Build outputs include the `slaythespire`
+Python extension and the `main`, `test`, and `small-test` executables. To import
+the extension, add the build output directory to `PYTHONPATH`.
+
 * If your build fails with an error about not-return-only `constexpr` methods, ensure your compiler supports c++17.
 * If CLion shows an error about not finding python libs when loading the cmake project, try opening CLion from the msys2 shell.
