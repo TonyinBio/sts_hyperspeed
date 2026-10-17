@@ -60,13 +60,13 @@ namespace sts {
     };
 
     struct CardSelectInfo {
-        std::array<CardId, 3> cards;
+        std::array<CardId, 3> cards{};
         bool canPickZero = false;
         bool canPickAnyNumber = false;
         int pickCount = 0;
         int data0 = 0;
 
-        CardSelectTask cardSelectTask;
+        CardSelectTask cardSelectTask = CardSelectTask::INVALID;
 
         std::array<CardId, 3>& discovery_Cards() { return cards; }
         int& discovery_CopyCount() { return data0; }
