@@ -5,6 +5,9 @@ project(
         DESCRIPTION "High Performance, rng accurate implementation of Slay the Spire with tools for tree search and ml."
         LANGUAGES CXX)
 
+set(THREADS_PREFER_PTHREAD_FLAG ON)
+find_package(Threads REQUIRED)
+
 file (GLOB_RECURSE sts_lightspeed_SOURCES CONFIGURE_DEPENDS "src/*.cpp")
 
 set(CMAKE_CXX_STANDARD 17)
@@ -37,3 +40,7 @@ add_executable(small-test apps/small-test.cpp bindings/bindings-util.cpp ${sts_l
 target_include_directories(small-test PUBLIC include)
 target_include_directories(small-test PUBLIC json/include)
 target_include_directories(small-test PUBLIC bindings)
+
+foreach(target IN ITEMS slaythespire main test small-test)
+    target_link_libraries(${target} PRIVATE Threads::Threads)
+endforeach()
